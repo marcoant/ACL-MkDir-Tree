@@ -1,0 +1,126 @@
+@ACL1000
+^FOLDER   Subscripts                          1370421831
+[PARENT_FOLDER_ID] 0
+^FOLDER   MakeDir_Scripts                     1370421490
+[PARENT_FOLDER_ID] 1370421831
+^BATCH    MakeDir_For_Today                  
+[PARENT_FOLDER_ID] 1370421831
+COMMENT --- MakeDir %Project_Path%\Reports\YYYY\MM\DD
+ASSIGN YYYY=ZONED(YEAR(TODAY());4)
+ASSIGN MM=ZONED(MONTH(TODAY());2)
+ASSIGN DD=ZONED(DAY(TODAY());2)
+
+COMMENT *** We assign DIRNAME variable with reports directory + YYYY\MM\DD
+ASSIGN DIRNAME="%REPORTS_DIRECTORY%\%YYYY%\%MM%\%DD%"
+COMMENT *** Now we run MakeDir script, which uses DIRNAME variable
+DO SCRIPT MakeDir
+
+^BATCH    GetProjectPath                     
+[PARENT_FOLDER_ID] 1370421831
+COMMENT --- Get project path
+SET FOLDER /TABLES
+DIR *.AC to _Dir
+OPEN _Dir
+Project = REVERSE(SPLIT( REVERSE(FILE_NAME); "\"; 1 ))
+Project_Path = SUBSTRING(FILE_NAME;1;AT( 1; Project; FILE_NAME)-2)
+
+DELETE FORMAT _Dir OK
+
+DELETE FOLDER TABLES OK
+^BATCH    MakeSubDir                         
+[PARENT_FOLDER_ID] 1370421490
+COM * MakeSubDir - item %MD_iDir%
+
+ASSIGN MD_SubDir=SPLIT(DIRNAME;"\";MD_iDir)
+
+COM * Check if %MD_Parent%\%MD_SubDir% directory exists  
+DIR "%MD_Parent%\%MD_SubDir%" SUPPRESS to MakeDirectoty_Tmp
+OPEN MakeDirectoty_Tmp
+COUNT IF FILE_NAME=MD_SubDir AND FILE_ATTRIBUTES="D"
+
+COM * Create directory if it doesn't exist
+IF COUNT1<1 EXECUTE 'cmd /c md "%MD_Parent%\%MD_SubDir%"' 
+
+COM * Assign MD_Parent variable containing %MD_Parent%\%MD_SubDir% directory
+ASSIGN MD_Parent="%MD_Parent%\%MD_SubDir%"
+
+COM * Close and removey temporary table
+CLOSE MakeDirectoty_Tmp
+DELETE FORMAT MakeDirectoty_Tmp OK
+
+ASSIGN MD_iDir=MD_iDir+1
+
+^BATCH    MakeDir                            
+[PARENT_FOLDER_ID] 1370421490
+COMMENT --- Creates directory DIRNAME
+COMMENT --- Uses DIRNAME variable containing the name of the directory
+SET SAFETY OFF
+
+SET FOLDER /TABLES
+
+ASSIGN MD_Parent=SPLIT(DIRNAME;"\";1)
+ASSIGN MD_iDir=2
+DO MakeSubDir WHILE SPLIT(DIRNAME;"\";MD_iDir)<>" "
+
+SET FOLDER /
+DELETE FOLDER TABLES OK
+^BATCH    RunMe                              
+[PARENT_FOLDER_ID] 0
+SET SAFETY OFF
+
+COMMENT *** This ACL projects shows how to take advantage of the EXECUTE command 
+COMMENT *** to dynamically create a directory tree.
+COMMENT *** Imagine you have a project which generates several daily reports and
+COMMENT *** you want to have all those reports stored in a directory tree like this:
+COMMENT ***    [ACL Project Path]
+COMMENT ***             /Reports
+COMMENT ***                  /2013/01/01: A.rpt, B.rpt, ...
+COMMENT ***                  /2013/01/02: A.rpt, B.rpt, ...
+COMMENT ***                       ...
+COMMENT ***                  /2013/01/31: A.rpt, B.rpt, ...
+COMMENT ***                  /2013/02/01: A.rpt, B.rpt, ...
+COMMENT ***                       ...
+COMMENT ***                  /2013/12/01: A.rpt, B.rpt, ...
+COMMENT ***                       ...
+COMMENT ***                  /2013/12/31: A.rpt, B.rpt, ...
+COMMENT ***
+COMMENT *** The reusable code of this project are the scripts in MakeDir_Scripts folder.
+COMMENT *** You just need to assign the full path to a DIRNAME variable and run MakeDir script.
+COMMENT *** It will create al the directorie tree.
+COMMENT *** * Example 1:
+COMMENT ***   If we have a C:\MyReports directory and we do:
+COMMENT ***      ASSIGN DIRNAME="C:\MyReports\2013\05"
+COMMENT ***      DO SCRIPT MakeDir
+COMMENT ***   It will create:
+COMMENT ***      C:\MyReports\2013
+COMMENT ***      C:\MyReports\2013\05
+COMMENT *** * Example 2:
+COMMENT ***   If we have a C:\MyReports directory and we do:
+COMMENT ***      ASSIGN DIRNAME="C:\MyReports\EntrepriseA\Reports\Sales"
+COMMENT ***      DO SCRIPT MakeDir
+COMMENT ***      ASSIGN DIRNAME="C:\MyReports\EntrepriseA\Reports\Purchases"
+COMMENT ***      DO SCRIPT MakeDir
+COMMENT ***      ASSIGN DIRNAME="C:\MyReports\EntrepriseB\Reports\Sales"
+COMMENT ***      DO SCRIPT MakeDir
+COMMENT ***      ASSIGN DIRNAME="C:\MyReports\EntrepriseB\Reports\Purchases"
+COMMENT ***      DO SCRIPT MakeDir
+COMMENT ***   It will create:
+COMMENT ***      C:\MyReports\EnterpriseA
+COMMENT ***      C:\MyReports\EnterpriseA\Reports
+COMMENT ***      C:\MyReports\EnterpriseA\Reports\Sales
+COMMENT ***      C:\MyReports\EnterpriseA\Reports\Purchases
+COMMENT ***      C:\MyReports\EnterpriseB\Reports
+COMMENT ***      C:\MyReports\EnterpriseB\Reports\Sales
+COMMENT ***      C:\MyReports\EnterpriseB\Reports\Purchases
+
+COMMENT *** First we get ACL Project path
+DO SCRIPT GetProjectPath
+
+COMMENT *** Now we define REPORTS_DIRECTORY 
+ASSIGN REPORTS_DIRECTORY="%Project_Path%\Reports"
+
+COMMENT *** And finally we call MakeDir_For_Today to create the YYYY/MM/DD dirs
+DO SCRIPT MakeDir_For_Today
+^LOGFILE  MkDir_Tree                          "" "MkDir_Tree.LOG"
+[PARENT_FOLDER_ID] 0
+^OPEN 
