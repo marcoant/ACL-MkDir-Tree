@@ -1,7 +1,7 @@
 ACL-MkDir-Tree
 ==============
-This ACL projects shows how to take advantage of the EXECUTE command to dynamically 
-create a directory tree.
+This very very simple ACL project shows how to take advantage of the EXECUTE command to  
+create a directory tree at runtime.
 
 Imagine you have a project which generates several daily reports and
 you want to have all those reports stored in a directory tree like this:
