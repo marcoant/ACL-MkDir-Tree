@@ -20,7 +20,7 @@ This is what this project does.
 
 The reusable code of this project are the scripts in MakeDir_Scripts folder.
 You just need to assign the full path to a DIRNAME variable and run MakeDir script.
-It will create al the directorie tree.
+It will create all the directory tree.
 
 * Example 1:
 
