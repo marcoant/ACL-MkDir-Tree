@@ -6,6 +6,7 @@ create a directory tree.
 
 Imagine you have a project which generates several daily reports and
 you want to have all those reports stored in a directory tree like this:
+
    [ACL Project Path]
             /Reports
                  /2013/01/01: A.rpt, B.rpt, ...
@@ -17,8 +18,8 @@ you want to have all those reports stored in a directory tree like this:
                  /2013/12/01: A.rpt, B.rpt, ...
                       ...
                  /2013/12/31: A.rpt, B.rpt, ...
-
-
+                 
+                 
 The reusable code of this project are the scripts in MakeDir_Scripts folder.
 You just need to assign the full path to a DIRNAME variable and run MakeDir script.
 It will create al the directorie tree.
