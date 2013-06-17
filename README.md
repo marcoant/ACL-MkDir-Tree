@@ -63,3 +63,4 @@ HISTORY:
 
       20130617 - The semicolon separators have been replaced with spaces. 
                  Now the code will run regardless the ACL user config (Thanks to Keith P.)
+      20130608 - Initial version
