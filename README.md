@@ -57,3 +57,8 @@ It will create:
       C:\MyReports\EnterpriseB\Reports
       C:\MyReports\EnterpriseB\Reports\Sales
       C:\MyReports\EnterpriseB\Reports\Purchases
+
+
+HISTORY:
+      20130617 - The semicolon separators have been replaced with spaces. 
+                 Now the code will run regardless the ACL user config (Thanks to Keith P.)
